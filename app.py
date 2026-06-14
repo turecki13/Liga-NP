@@ -191,7 +191,7 @@ def strona_glowna() -> None:
         st.success("✅ Wyniki możesz zgłaszać samodzielnie w zakładce **➕ Zgłoś wynik** "
                    "(każdy wynik trafia do akceptacji organizatora).")
         st.success("🤝 Zachęcamy do aktywnego korzystania z zakładki **Klasyfikacja Fair Play** "
-                   "— oceniajcie przeciwników i budujmy razem dobrą, sportową atmosferę w lidze!")
+                   "— (d)oceniajcie przeciwników i budujmy razem dobrą, sportową atmosferę w lidze!")
     else:
         st.warning("ℹ️ Tryb tylko do odczytu (dane z plików CSV). Aby włączyć samodzielne "
                    "zgłaszanie wyników, skonfiguruj Google Sheets – patrz README.")
