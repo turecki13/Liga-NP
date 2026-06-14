@@ -32,7 +32,7 @@ LOGO_PIONOWE = LOGO_DIR / "logo 1.png"   # ikona nad napisem
 LIGI_MENU = {f"🎾 {nazwa}": nazwa for nazwa in config.LIGI.values()}
 
 st.set_page_config(
-    page_title="Liga Tenisowa – NP Tennis Academy",
+    page_title="Letnia Liga Tenisowa NP Tennis Academy",
     page_icon=str(LOGO_PIONOWE) if LOGO_PIONOWE.exists() else "🎾",
     layout="wide",
 )
@@ -174,13 +174,13 @@ def strona_glowna() -> None:
     if LOGO_PIONOWE.exists():
         kol_logo, kol_tytul = st.columns([1, 3], vertical_alignment="center")
         kol_logo.image(str(LOGO_PIONOWE), width=180)
-        kol_tytul.title("Liga Tenisowa")
+        kol_tytul.title("Letnia Liga Tenisowa NP Tennis Academy")
     else:
-        st.title("🎾 Liga Tenisowa")
+        st.title("🎾 Letnia Liga Tenisowa NP Tennis Academy")
 
     st.markdown(
         """
-        Witamy na oficjalnej stronie **Ligi Tenisowej NP Tennis Academy**!
+        Witamy na oficjalnej stronie **Letniej Ligi Tenisowej NP Tennis Academy**!
 
         Strona prezentuje aktualne tabele oraz terminarze rozgrywek we wszystkich
         kategoriach. Wybierz odpowiednią ligę z menu po lewej stronie.
@@ -211,6 +211,10 @@ def strona_glowna() -> None:
         st.markdown(regulamin.read_text(encoding="utf-8"))
     else:
         st.info("Treść regulaminu znajdziesz w pliku `data/regulamin.md`.")
+
+    st.markdown("---")
+    st.caption("© 2026 Letnia Liga Tenisowa NP Tennis Academy · "
+               "aplikację stworzył **Tomek Turek** 🎾")
 
 
 def strona_fairplay() -> None:
@@ -399,7 +403,8 @@ def main() -> None:
             raise
 
     st.sidebar.markdown("---")
-    st.sidebar.caption("Liga Tenisowa • NP Tennis Academy • sezon 2026")
+    st.sidebar.caption("Letnia Liga Tenisowa • NP Tennis Academy • sezon 2026")
+    st.sidebar.caption("Aplikację stworzył **Tomek Turek** 🎾")
 
 
 main()

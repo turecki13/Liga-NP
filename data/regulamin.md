@@ -63,10 +63,10 @@ Jeżeli zawodnicy chcą rozegrać swój mecz poza wyznaczoną kolejką, mogą to
 
 - W każdym meczu wyznaczony jest Gospodarz oraz Gość.
 - Gospodarz jest odpowiedzialny za organizację meczu, czyli:
-- kontakt z Gościem,
-- zaproponowanie terminu lub terminów rozegrania meczu,
-- dopilnowanie, aby mecz odbył się w terminie danej kolejki,
-- przekazanie wyniku organizatorom lub wpisanie go w systemie, jeśli taki zostanie wskazany.
+    - kontakt z Gościem,
+    - zaproponowanie terminu lub terminów rozegrania meczu,
+    - dopilnowanie, aby mecz odbył się w terminie danej kolejki,
+    - przekazanie wyniku organizatorom lub wpisanie go w systemie, jeśli taki zostanie wskazany.
 - Jeżeli mecz nie odbędzie się z winy Gospodarza, mecz może zostać zweryfikowany jako walkower na korzyść Gościa.
 - Jeżeli Gość nie odpowiada, odrzuca proponowane terminy lub utrudnia rozegranie meczu, a Gospodarz wykazuje realną chęć rozegrania spotkania, zawodnicy, w szczególności Gospodarz, powinni skontaktować się z organizatorami.
 - W takiej sytuacji organizatorzy rozpatrują sprawę indywidualnie. Możliwe jest wyznaczenie dodatkowych terminów rozegrania meczu.
@@ -89,21 +89,21 @@ Jeżeli zawodnicy chcą rozegrać swój mecz poza wyznaczoną kolejką, mogą to
 - Za zwycięstwo w meczu zawodnik otrzymuje 3 punkty.
 - Za porażkę zawodnik otrzymuje 1 punkt.
 - W przypadku walkowera punktacja wynosi:
-- 3 punkty dla zawodnika otrzymującego walkower,
-- 0 punktów dla zawodnika oddającego walkower.
+    - 3 punkty dla zawodnika otrzymującego walkower,
+    - 0 punktów dla zawodnika oddającego walkower.
 - W przypadku nie zakończenia meczu decyzję o uznaniu wyniku, powtórzeniu meczu lub przyznaniu walkowera podejmują organizatorzy.
 - Przy ustalaniu kolejności w tabeli decydują kolejno:
-- liczba zdobytych punktów,
-- jeśli remis ma 2 zawodników — wynik bezpośredniego pojedynku,
-- jeśli remis ma 3 lub więcej zawodników — różnica setów wygranych do przegranych ze wszystkich rozegranych meczów, potem różnica gemów wygranych do przegranych ze wszystkich rozegranych meczów
+    - liczba zdobytych punktów,
+    - jeśli remis ma 2 zawodników — wynik bezpośredniego pojedynku,
+    - jeśli remis ma 3 lub więcej zawodników — różnica setów wygranych do przegranych ze wszystkich rozegranych meczów, potem różnica gemów wygranych do przegranych ze wszystkich rozegranych meczów
 
 ### 6. Klasyfikacja Fair Play
 
 - Zawodnicy będą mieli możliwość oceny fair play przeciwnika po rozegranym meczu.
 - Ocena fair play będzie odbywała się w skali -1 / 0 / +1:
-- +1 — przeciwnik zachowywał się bardzo sportowo, grał uczciwie, z szacunkiem i w duchu fair play,
-- 0 — mecz przebiegł normalnie, bez szczególnych zastrzeżeń ani wyróżnień,
-- -1 — przeciwnik zachowywał się niesportowo, np. oszukiwał, przeklinał, kłócił się, celowo wywoływał konflikty lub utrudniał rozegranie meczu w sportowej atmosferze.
+    - +1 — przeciwnik zachowywał się bardzo sportowo, grał uczciwie, z szacunkiem i w duchu fair play,
+    - 0 — mecz przebiegł normalnie, bez szczególnych zastrzeżeń ani wyróżnień,
+    - -1 — przeciwnik zachowywał się niesportowo, np. oszukiwał, przeklinał, kłócił się, celowo wywoływał konflikty lub utrudniał rozegranie meczu w sportowej atmosferze.
 - W przypadku ocen 0 oraz +1 organizatorzy zachęcają do dodania krótkiego komentarza uzasadniającego ocenę.
 - W przypadku oceny -1 dodanie komentarza jest obowiązkowe, aby zapewnić organizatorom szerszy wgląd w sytuację oraz umożliwić rzetelną ocenę zgłoszenia.
 - Zgłoszenie oceny -1 bez komentarza nie będzie brane pod uwagę do klasyfikacji.
@@ -127,19 +127,19 @@ Jeżeli zawodnicy chcą rozegrać swój mecz poza wyznaczoną kolejką, mogą to
 
 - W przypadku kontuzji lub sytuacji losowej zawodnik powinien niezwłocznie poinformować organizatorów.
 - Organizatorzy mogą podjąć decyzję o:
-- przełożeniu meczu,
-- przyznaniu walkowera,
-- anulowaniu meczu,
-- innym rozwiązaniu dostosowanym do sytuacji.
+    - przełożeniu meczu,
+    - przyznaniu walkowera,
+    - anulowaniu meczu,
+    - innym rozwiązaniu dostosowanym do sytuacji.
 - Długotrwała kontuzja lub brak możliwości dalszej gry może skutkować wycofaniem zawodnika z rozgrywek.
 
 ### 9. Zakończenie sezonu - spadki i awanse
 
 - Zakończenie sezonu odbędzie się 20.09.
 - W ramach zakończenia zaplanowane jest:
-- spotkanie ligowców,
-- integracyjny turniej towarzyski,
-- rozdanie nagród.
+    - spotkanie ligowców,
+    - integracyjny turniej towarzyski,
+    - rozdanie nagród.
 - Nagrody zostaną przyznane najlepszym zawodnikom sezonu według klasyfikacji końcowej ligi.
 - Organizatorzy mogą przewidzieć również dodatkowe wyróżnienia, np. za największy progres, sportową postawę, największe zaangażowanie w rozgrywki lub najwyższy współczynnik fair play.
 - Dwie pierwsze osoby w klasyfikacji końcowej ligi 2 oraz ligi 3 uzyskują awans do ligi wyższej.
@@ -165,6 +165,6 @@ Jeżeli zawodnicy chcą rozegrać swój mecz poza wyznaczoną kolejką, mogą to
 
 Wszelkie pytania, problemy z umawianiem meczów, kontuzje oraz sytuacje sporne należy zgłaszać do organizatorów ligi.
 
-Tomasz Turek +48 536 960 973
+Tomasz Turek — +48 536 960 973
 
-Marcel Jaskuła +48 535 706 706
+Marcel Jaskuła — +48 535 706 706
