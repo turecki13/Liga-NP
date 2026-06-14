@@ -1,7 +1,4 @@
-# 🎾 Liga Tenisowa – NP Tennis Academy
-
-Strona w Streamlit do prezentacji wyników ligi tenisowej z **samodzielnym
-zgłaszaniem wyników przez zawodników** i **trybem akceptacji** przez organizatora.
+# 🎾 Letnia Liga Tenisowa NP Tennis Academy
 
 ## Dwa tryby działania
 
