@@ -64,12 +64,28 @@ print(t.to_string(index=False))
 # Ola: 2 mecze (P vs Ala, W vs Ela) -> 2 pkt
 # Ela: 2 mecze (P vs Ola, W vs Ala) -> 2 pkt
 sprawdz("3 zawodników w tabeli", len(t) == 3)
-sprawdz("każdy ma 2 pkt", set(t["Punkty"]) == {2})
+sprawdz("każdy ma 4 pkt (1W=3 + 1P=1)", set(t["Punkty"]) == {4})
 sprawdz("Ala ma 2 mecze", int(t[t.Zawodnik == "Ala"]["Mecze"].iloc[0]) == 2)
 # Ola: sety wygrane = 2(vs Ala?nie) ... sprawdźmy bilans Eli (wygrała z Alą 2:0, przegrała z Olą 1:2) -> sety 3:2 bilans +1
 ela = t[t.Zawodnik == "Ela"].iloc[0]
 sprawdz("Ela sety 3 wygrane / 2 przegrane", int(ela["Sety wygrane"]) == 3 and int(ela["Sety przegrane"]) == 2)
 sprawdz("tabela ma kolumny gemów", "Gemy wygrane" in t.columns and "Gemy przegrane" in t.columns)
+
+# --- tie-break: dokladnie 2 osoby remisuja -> decyduje bezposredni pojedynek ---
+# A i B po 7 pkt (A pokonal B), C i D po 5 pkt (C pokonal D).
+mecze_tb = [
+    {"Gospodarz": "A", "Gość": "B", "Set1": "6:4", "Set2": "6:4", "SuperTB": ""},  # A bije B (h2h)
+    {"Gospodarz": "A", "Gość": "C", "Set1": "6:4", "Set2": "6:4", "SuperTB": ""},  # A bije C
+    {"Gospodarz": "D", "Gość": "A", "Set1": "6:4", "Set2": "6:4", "SuperTB": ""},  # D bije A
+    {"Gospodarz": "B", "Gość": "C", "Set1": "6:4", "Set2": "6:4", "SuperTB": ""},  # B bije C
+    {"Gospodarz": "B", "Gość": "D", "Set1": "6:4", "Set2": "6:4", "SuperTB": ""},  # B bije D
+    {"Gospodarz": "C", "Gość": "D", "Set1": "6:4", "Set2": "6:4", "SuperTB": ""},  # C bije D
+]
+ttb = oblicz_tabele(mecze_tb)
+kolejnosc = list(ttb["Zawodnik"])
+sprawdz("A i B po 7 pkt", int(ttb[ttb.Zawodnik=='A']['Punkty'].iloc[0]) == 7 and int(ttb[ttb.Zawodnik=='B']['Punkty'].iloc[0]) == 7)
+sprawdz("A przed B (wygral bezposredni pojedynek)", kolejnosc.index("A") < kolejnosc.index("B"))
+sprawdz("C przed D (wygral bezposredni pojedynek)", kolejnosc.index("C") < kolejnosc.index("D"))
 
 print()
 if bledy:

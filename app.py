@@ -85,7 +85,7 @@ def strona_ligi(etykieta_menu: str, nazwa_ligi: str) -> None:
         with tab_tabela:
             _tabela_sheets(mecze)
         with tab_kalendarz:
-            _kalendarz_sheets(mecze, oczekujace_id)
+            _kalendarz_sheets(mecze, oczekujace_id, nazwa_ligi)
     else:
         prefiks = _prefiks_csv(nazwa_ligi)
         with tab_tabela:
@@ -109,7 +109,16 @@ def _tabela_sheets(mecze: list[dict]) -> None:
     st.caption("Tabela liczona automatycznie z zatwierdzonych wyników.")
 
 
-def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str]) -> None:
+def _lista_zawodnikow(df: pd.DataFrame) -> list[str]:
+    """Posortowana lista unikalnych zawodników z kolumn Gospodarz/Gość."""
+    nazwy = set()
+    for kol in ("Gospodarz", "Gość"):
+        if kol in df.columns:
+            nazwy |= {str(x).strip() for x in df[kol] if str(x).strip()}
+    return sorted(nazwy)
+
+
+def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str], klucz: str) -> None:
     if not mecze:
         st.info("Brak meczów w arkuszu dla tej ligi.")
         return
@@ -123,8 +132,18 @@ def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str]) -> None:
         return "—"
 
     df["Wynik"] = df.apply(status, axis=1)
-    kolumny = [k for k in ["Data", "Gospodarz", "Gość", "Wynik"] if k in df.columns]
 
+    # Filtr po zawodniku – pokaż tylko jego mecze i kolejki.
+    WSZYSCY = "— wszyscy zawodnicy —"
+    wybor = st.selectbox("Pokaż mecze zawodnika:", [WSZYSCY] + _lista_zawodnikow(df),
+                         key=f"filtr_kal_{klucz}")
+    if wybor != WSZYSCY:
+        df = df[(df["Gospodarz"] == wybor) | (df["Gość"] == wybor)]
+        if df.empty:
+            st.info("Brak meczów tego zawodnika.")
+            return
+
+    kolumny = [k for k in ["Data", "Gospodarz", "Gość", "Wynik"] if k in df.columns]
     if "Kolejka" in df.columns:
         for kolejka, grupa in df.groupby("Kolejka", sort=True):
             st.markdown(f"#### Kolejka {kolejka}")
@@ -178,10 +197,10 @@ def strona_glowna() -> None:
     st.subheader("ℹ️ Informacje")
     st.markdown(
         """
-        - **Sezon:** 2026
+        - **Sezon:** 2026 (15.06 – 20.09)
         - **Format:** rozgrywki w systemie ligowym (każdy z każdym)
         - **Mecz:** do 2 wygranych setów; przy stanie 1:1 super tie-break do 10
-        - **Punktacja:** 2 pkt za zwycięstwo, 0 za porażkę
+        - **Punktacja:** 3 pkt za zwycięstwo, 1 pkt za porażkę
         - **Kategorie:** 3 ligi kobiet i 3 ligi mężczyzn + klasyfikacja Fair Play
         """
     )
@@ -226,6 +245,15 @@ def strona_zglos_wynik() -> None:
     if not dostepne:
         st.info("Brak meczów do zgłoszenia w tej lidze (wszystkie rozegrane lub arkusz pusty).")
         return
+
+    # Filtr po zawodniku – ułatwia znalezienie swojego meczu.
+    WSZYSCY = "— wszyscy zawodnicy —"
+    gracze = sorted({str(m.get("Gospodarz", "")).strip() for m in dostepne}
+                    | {str(m.get("Gość", "")).strip() for m in dostepne})
+    kto = st.selectbox("Twoje nazwisko (filtr)", [WSZYSCY] + gracze)
+    if kto != WSZYSCY:
+        dostepne = [m for m in dostepne
+                    if kto in (str(m.get("Gospodarz", "")).strip(), str(m.get("Gość", "")).strip())]
 
     def etykieta(m):
         return f"Kolejka {m.get('Kolejka','?')}: {m.get('Gospodarz','?')} vs {m.get('Gość','?')}" \
@@ -345,16 +373,30 @@ def main() -> None:
 
     wybor = st.sidebar.radio("Przejdź do:", opcje, label_visibility="collapsed")
 
-    if wybor == "🏠 Strona główna":
-        strona_glowna()
-    elif wybor == "🤝 Klasyfikacja Fair Play":
-        strona_fairplay()
-    elif wybor == "➕ Zgłoś wynik":
-        strona_zglos_wynik()
-    elif wybor == "🔒 Panel akceptacji":
-        strona_panel_admina()
-    elif wybor in LIGI_MENU:
-        strona_ligi(wybor, LIGI_MENU[wybor])
+    try:
+        if wybor == "🏠 Strona główna":
+            strona_glowna()
+        elif wybor == "🤝 Klasyfikacja Fair Play":
+            strona_fairplay()
+        elif wybor == "➕ Zgłoś wynik":
+            strona_zglos_wynik()
+        elif wybor == "🔒 Panel akceptacji":
+            strona_panel_admina()
+        elif wybor in LIGI_MENU:
+            strona_ligi(wybor, LIGI_MENU[wybor])
+    except Exception as e:
+        # Czytelny komunikat dla użytkowników zamiast surowego tracebacku.
+        if sheets.skonfigurowane():
+            st.error(
+                "⚠️ Nie udało się połączyć z arkuszem Google. Spróbuj odświeżyć stronę "
+                "za chwilę. Jeśli problem się powtarza, skontaktuj się z organizatorem."
+            )
+            st.caption("Najczęstsza przyczyna: błędne dane konta usługi w sekretach "
+                       "albo arkusz nieudostępniony kontu usługi.")
+            with st.expander("Szczegóły techniczne (dla organizatora)"):
+                st.exception(e)
+        else:
+            raise
 
     st.sidebar.markdown("---")
     st.sidebar.caption("Liga Tenisowa • NP Tennis Academy • sezon 2026")

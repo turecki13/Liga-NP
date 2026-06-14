@@ -109,8 +109,13 @@ def oblicz_tabele(mecze: list[dict]) -> pd.DataFrame:
 
     Każdy mecz to słownik z kluczami: Gospodarz, Gość, Set1, Set2, SuperTB.
     Mecze z niepoprawnym/pustym wynikiem są pomijane.
+
+    Punktacja (regulamin): zwycięstwo = 3 pkt, porażka = 1 pkt.
+    Kolejność: punkty → bezpośredni pojedynek (gdy remisuje 2) → różnica setów
+    → różnica gemów.
     """
     stat: dict[str, dict] = {}
+    h2h: dict[tuple[str, str], int] = {}  # (zwycięzca, przegrany) -> liczba zwycięstw
 
     def gracz(nazwa: str) -> dict:
         return stat.setdefault(
@@ -143,12 +148,16 @@ def oblicz_tabele(mecze: list[dict]) -> pd.DataFrame:
         o["Gemy przegrane"] += wynik["gemy_g"]
         if wynik["zwyciezca"] == "gospodarz":
             g["Wygrane"] += 1
-            g["Punkty"] += 2
+            g["Punkty"] += 3
             o["Przegrane"] += 1
+            o["Punkty"] += 1
+            h2h[(gosp, gosc)] = h2h.get((gosp, gosc), 0) + 1
         else:
             o["Wygrane"] += 1
-            o["Punkty"] += 2
+            o["Punkty"] += 3
             g["Przegrane"] += 1
+            g["Punkty"] += 1
+            h2h[(gosc, gosp)] = h2h.get((gosc, gosp), 0) + 1
 
     kolumny = ["Zawodnik", "Mecze", "Wygrane", "Przegrane",
                "Sety wygrane", "Sety przegrane",
@@ -156,8 +165,35 @@ def oblicz_tabele(mecze: list[dict]) -> pd.DataFrame:
     if not stat:
         return pd.DataFrame(columns=kolumny)
 
-    df = pd.DataFrame(list(stat.values()))
-    df["_bilans"] = df["Sety wygrane"] - df["Sety przegrane"]
-    df = df.sort_values(["Punkty", "_bilans"], ascending=False, kind="stable")
-    df = df.drop(columns="_bilans").reset_index(drop=True)
+    # Pomocnicze różnice do rozstrzygania remisów.
+    for p in stat.values():
+        p["_sety"] = p["Sety wygrane"] - p["Sety przegrane"]
+        p["_gemy"] = p["Gemy wygrane"] - p["Gemy przegrane"]
+
+    def klucz_roznic(p):
+        return (p["_sety"], p["_gemy"])
+
+    # Grupujemy po punktach i wewnątrz grupy stosujemy regulaminowe tie-breaki.
+    gracze = sorted(stat.values(), key=lambda p: p["Punkty"], reverse=True)
+    uporzadkowani: list[dict] = []
+    i = 0
+    while i < len(gracze):
+        j = i
+        while j < len(gracze) and gracze[j]["Punkty"] == gracze[i]["Punkty"]:
+            j += 1
+        grupa = gracze[i:j]
+        if len(grupa) == 2:
+            a, b = grupa
+            wa = h2h.get((a["Zawodnik"], b["Zawodnik"]), 0)
+            wb = h2h.get((b["Zawodnik"], a["Zawodnik"]), 0)
+            if wa != wb:
+                grupa = [a, b] if wa > wb else [b, a]
+            else:
+                grupa = sorted(grupa, key=klucz_roznic, reverse=True)
+        else:
+            grupa = sorted(grupa, key=klucz_roznic, reverse=True)
+        uporzadkowani.extend(grupa)
+        i = j
+
+    df = pd.DataFrame(uporzadkowani).reset_index(drop=True)
     return df[kolumny]

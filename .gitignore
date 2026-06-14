@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 *.log
 .venv/
+
+# Dane osobowe i klucze – NIE commitować
+*.xlsx
+*.docx
+*.json
