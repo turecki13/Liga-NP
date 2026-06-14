@@ -14,6 +14,7 @@ LIGI: dict[str, str] = {
 WS_MECZE = "mecze"
 WS_ZGLOSZENIA = "zgloszenia"
 WS_FAIRPLAY = "fairplay"
+WS_FAIRPLAY_OCENY = "fairplay_oceny"
 
 # Nagłówki kolumn w poszczególnych zakładkach arkusza.
 KOL_MECZE = [
@@ -25,6 +26,10 @@ KOL_ZGLOSZENIA = [
     "Set1", "Set2", "SuperTB", "Wynik", "Status", "Rozpatrzono",
 ]
 KOL_FAIRPLAY = ["Zawodnik", "Liga", "Punkty Fair Play"]
+KOL_FAIRPLAY_OCENY = [
+    "ID", "Czas", "MeczID", "Liga", "Kolejka",
+    "Oceniający", "Oceniany", "Ocena", "Komentarz",
+]
 
 # Statusy zgłoszeń
 STATUS_OCZEKUJE = "oczekuje"

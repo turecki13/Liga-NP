@@ -217,6 +217,14 @@ def strona_glowna() -> None:
                "aplikację stworzył **Tomek Turek** 🎾")
 
 
+# Etykiety ocen fair play (-1 / 0 / +1) — kolejność od najlepszej.
+OCENY_FP = {
+    1: "🟢 +1 — bardzo sportowo",
+    0: "⚪ 0 — normalnie",
+    -1: "🔴 -1 — niesportowo",
+}
+
+
 def strona_fairplay() -> None:
     st.header("🤝 Klasyfikacja Fair Play")
     if sheets.skonfigurowane():
@@ -224,10 +232,93 @@ def strona_fairplay() -> None:
         df = pd.DataFrame(dane) if dane else None
     else:
         df = _wczytaj_csv("fairplay.csv")
+
     if df is None or df.empty:
         st.info("Brak danych klasyfikacji Fair Play.")
+    else:
+        # Filtry: liga + szukaj zawodnika (pozycje liczone w obrębie wybranej ligi).
+        WSZYSTKIE = "— wszystkie ligi —"
+        ligi = [WSZYSTKIE] + (sorted(df["Liga"].dropna().unique()) if "Liga" in df.columns else [])
+        c1, c2 = st.columns(2)
+        liga = c1.selectbox("Liga", ligi, key="fp_liga")
+        szukaj = c2.text_input("Szukaj zawodnika", key="fp_szukaj").strip()
+
+        zakres = df if liga == WSZYSTKIE else df[df["Liga"] == liga]
+        ranking = _tabela_z_pozycjami(zakres, "Punkty Fair Play")
+        if szukaj:
+            ranking = ranking[ranking["Zawodnik"].str.contains(szukaj, case=False, na=False)]
+        if ranking.empty:
+            st.info("Brak zawodników dla wybranych filtrów.")
+        else:
+            st.dataframe(ranking, use_container_width=True)
+
+    # Okienko oceny fair play (tylko tryb Google Sheets).
+    if sheets.skonfigurowane():
+        st.markdown("---")
+        st.subheader("➕ Oceń fair play przeciwnika")
+        st.caption("Po rozegranym meczu oceń przeciwnika. Przy ocenie -1 komentarz jest obowiązkowy.")
+        _formularz_oceny_fp()
+
+
+def _formularz_oceny_fp() -> None:
+    mecze = sheets.pobierz_mecze()
+    liga = st.selectbox("Liga", list(config.LIGI.values()), key="oc_liga")
+    gracze = sorted({str(m.get("Gospodarz", "")).strip() for m in mecze
+                     if str(m.get("Liga", "")).strip() == liga}
+                    | {str(m.get("Gość", "")).strip() for m in mecze
+                       if str(m.get("Liga", "")).strip() == liga})
+    gracze = [g for g in gracze if g]
+    if not gracze:
+        st.info("Brak zawodników w tej lidze.")
         return
-    st.dataframe(_tabela_z_pozycjami(df, "Punkty Fair Play"), use_container_width=True)
+
+    ja = st.selectbox("Twoje nazwisko", gracze, key="oc_ja")
+    moje = [m for m in mecze
+            if str(m.get("Liga", "")).strip() == liga
+            and ja in (str(m.get("Gospodarz", "")).strip(), str(m.get("Gość", "")).strip())]
+    if not moje:
+        st.info("Brak meczów dla tego zawodnika.")
+        return
+
+    def przeciwnik(m):
+        g, go = str(m.get("Gospodarz", "")).strip(), str(m.get("Gość", "")).strip()
+        return go if ja == g else g
+
+    wybrany = st.selectbox(
+        "Mecz (oceniasz przeciwnika)", moje,
+        format_func=lambda m: f"Kolejka {m.get('Kolejka','?')}: vs {przeciwnik(m)}",
+        key="oc_mecz",
+    )
+    oceniany = przeciwnik(wybrany)
+    st.markdown(f"Oceniasz: **{oceniany}**")
+
+    with st.form("formularz_oceny"):
+        ocena_label = st.radio("Ocena fair play", list(OCENY_FP.values()), index=1)
+        komentarz = st.text_area("Komentarz", placeholder="Opcjonalnie (przy ocenie -1 wymagany)")
+        wyslij = st.form_submit_button("Wyślij ocenę", type="primary")
+
+    if wyslij:
+        ocena = next(k for k, v in OCENY_FP.items() if v == ocena_label)
+        if ocena == -1 and not komentarz.strip():
+            st.error("❌ Przy ocenie -1 komentarz jest obowiązkowy (zgodnie z regulaminem).")
+            return
+        wpis = {
+            "ID": uuid4().hex[:8],
+            "Czas": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "MeczID": wybrany.get("ID", ""),
+            "Liga": liga,
+            "Kolejka": wybrany.get("Kolejka", ""),
+            "Oceniający": ja,
+            "Oceniany": oceniany,
+            "Ocena": ocena,
+            "Komentarz": komentarz.strip(),
+        }
+        try:
+            sheets.dodaj_ocene(wpis)
+        except Exception as e:
+            st.error(f"Nie udało się zapisać oceny: {e}")
+            return
+        st.success(f"✅ Zapisano ocenę fair play dla: {oceniany}. Dziękujemy!")
 
 
 # =============================================================================
@@ -363,6 +454,52 @@ def strona_panel_admina() -> None:
                     st.rerun()
                 except Exception as e:
                     st.error(f"Błąd: {e}")
+
+    _panel_oceny_fp()
+
+
+def _panel_oceny_fp() -> None:
+    st.markdown("---")
+    oceny = sheets.pobierz_oceny()
+    st.subheader(f"🤝 Oceny fair play: {len(oceny)}")
+    if not oceny:
+        st.info("Brak ocen fair play.")
+        return
+
+    WSZYSTKIE = "— wszystkie ligi —"
+    ligi = [WSZYSTKIE] + sorted({str(o.get("Liga", "")).strip() for o in oceny if str(o.get("Liga", "")).strip()})
+    c1, c2 = st.columns(2)
+    liga = c1.selectbox("Liga", ligi, key="adm_oc_liga")
+    tylko_neg = c2.checkbox("Tylko negatywne (-1)", key="adm_oc_neg")
+
+    def jako_int(v):
+        try:
+            return int(float(v))
+        except (TypeError, ValueError):
+            return 0
+
+    widoczne = oceny
+    if liga != WSZYSTKIE:
+        widoczne = [o for o in widoczne if str(o.get("Liga", "")).strip() == liga]
+    if tylko_neg:
+        widoczne = [o for o in widoczne if jako_int(o.get("Ocena")) == -1]
+    widoczne = sorted(widoczne, key=lambda o: str(o.get("Czas", "")), reverse=True)
+
+    if not widoczne:
+        st.info("Brak ocen dla wybranych filtrów.")
+        return
+
+    for o in widoczne:
+        ocena = jako_int(o.get("Ocena"))
+        etykieta = OCENY_FP.get(ocena, str(ocena))
+        with st.container(border=True):
+            st.markdown(f"{etykieta} — **{o.get('Oceniany','')}**  ·  od: {o.get('Oceniający','')}")
+            st.caption(
+                f"{o.get('Liga','')} · Kolejka {o.get('Kolejka','')} · {o.get('Czas','')}"
+            )
+            komentarz = str(o.get("Komentarz", "")).strip()
+            if komentarz:
+                st.markdown(f"> {komentarz}")
 
 
 # =============================================================================

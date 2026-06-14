@@ -66,6 +66,7 @@ def main():
     ws_mecze = zapewnij_zakladke(arkusz, config.WS_MECZE, config.KOL_MECZE)
     zapewnij_zakladke(arkusz, config.WS_ZGLOSZENIA, config.KOL_ZGLOSZENIA)
     ws_fp = zapewnij_zakladke(arkusz, config.WS_FAIRPLAY, config.KOL_FAIRPLAY)
+    zapewnij_zakladke(arkusz, config.WS_FAIRPLAY_OCENY, config.KOL_FAIRPLAY_OCENY)
 
     # Import meczów z CSV (tylko gdy zakładka 'mecze' jest pusta).
     if len(ws_mecze.get_all_values()) <= 1:

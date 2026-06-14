@@ -78,11 +78,31 @@ def pobierz_fairplay() -> list[dict]:
         return []
 
 
+@st.cache_data(ttl=30, show_spinner=False)
+def pobierz_oceny() -> list[dict]:
+    try:
+        return _ws(config.WS_FAIRPLAY_OCENY).get_all_records()
+    except Exception:
+        return []  # zakładka jeszcze nie istnieje – brak ocen
+
+
 def wyczysc_cache() -> None:
     """Po zapisie czyścimy cache odczytu, żeby od razu widzieć zmiany."""
     pobierz_mecze.clear()
     pobierz_zgloszenia.clear()
     pobierz_fairplay.clear()
+    pobierz_oceny.clear()
+
+
+def _ws_lub_utworz(nazwa: str, naglowki: list[str]):
+    """Zwraca zakładkę; tworzy ją z nagłówkami, jeśli nie istnieje."""
+    ar = _arkusz()
+    try:
+        return ar.worksheet(nazwa)
+    except Exception:
+        ws = ar.add_worksheet(title=nazwa, rows=200, cols=max(10, len(naglowki)))
+        ws.update([naglowki], "A1", value_input_option="RAW")
+        return ws
 
 
 # --- Zapis -------------------------------------------------------------------
@@ -111,6 +131,14 @@ def dodaj_zgloszenie(z: dict) -> None:
     ws = _ws(config.WS_ZGLOSZENIA)
     wiersz = [str(z.get(kol, "")) for kol in config.KOL_ZGLOSZENIA]
     # RAW = "6:4" zostaje tekstem, a nie zamienia się na godzinę/czas.
+    ws.append_row(wiersz, value_input_option="RAW")
+    wyczysc_cache()
+
+
+def dodaj_ocene(o: dict) -> None:
+    """Dopisuje ocenę fair play (informacja dla organizatora)."""
+    ws = _ws_lub_utworz(config.WS_FAIRPLAY_OCENY, config.KOL_FAIRPLAY_OCENY)
+    wiersz = [str(o.get(kol, "")) for kol in config.KOL_FAIRPLAY_OCENY]
     ws.append_row(wiersz, value_input_option="RAW")
     wyczysc_cache()
 
