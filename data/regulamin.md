@@ -159,7 +159,7 @@ Jeżeli zawodnicy chcą rozegrać swój mecz poza wyznaczoną kolejką, mogą to
 - Uczestnik zobowiązuje się do zachowania należytej ostrożności podczas rozgrywania meczów oraz do przerwania gry w przypadku złego samopoczucia, kontuzji lub podejrzenia pogorszenia stanu zdrowia.
 - Organizatorzy nie ponoszą odpowiedzialności za kontuzje, urazy, pogorszenie stanu zdrowia ani szkody powstałe w związku z udziałem w Lidze.
 - Organizatorzy rekomendują, aby każdy uczestnik posiadał we własnym zakresie odpowiednie ubezpieczenie NNW obejmujące amatorskie uprawianie sportu.
-- W sprawach nie uregulowanych tym regulaminem organizatorzy będą podejmować decyzję w oparciu o obecnie obowiązujące przepisy Polskiego Związku Tenisowego.
+- W sprawach nieuregulowanych tym regulaminem organizatorzy będą podejmować decyzję w oparciu o obecnie obowiązujące przepisy Polskiego Związku Tenisowego.
 
 ## ORGANIZATORZY
 
