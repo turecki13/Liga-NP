@@ -53,6 +53,34 @@ def _tabela_z_pozycjami(df: pd.DataFrame, kol_sort: str | None = None) -> pd.Dat
     return df
 
 
+def _tabela_statyczna(df: pd.DataFrame) -> None:
+    """Statyczna tabela – nie da się przesuwać ani sortować kolumn. Bez indeksu."""
+    df = df.copy()
+    df.index = [""] * len(df)
+    st.table(df)
+
+
+def _pauzy_wg_kolejki(df: pd.DataFrame) -> dict:
+    """Zwraca {kolejka: [pauzujący]} na podstawie pełnego terminarza ligi."""
+    if "Kolejka" not in df.columns:
+        return {}
+
+    def osoby(ramka) -> set:
+        zbior = set()
+        for kol in ("Gospodarz", "Gość"):
+            if kol in ramka.columns:
+                zbior |= {str(x).strip() for x in ramka[kol] if str(x).strip()}
+        return zbior
+
+    wszyscy = osoby(df)
+    pauzy = {}
+    for kolejka, grupa in df.groupby("Kolejka", sort=True):
+        nieobecni = sorted(wszyscy - osoby(grupa))
+        if nieobecni:
+            pauzy[kolejka] = nieobecni
+    return pauzy
+
+
 # =============================================================================
 #  Odczyt danych – CSV (tryb zapasowy)
 # =============================================================================
@@ -93,7 +121,7 @@ def strona_ligi(etykieta_menu: str, nazwa_ligi: str) -> None:
             if df is None or df.empty:
                 st.info("Brak danych w tabeli.")
             else:
-                st.dataframe(_tabela_z_pozycjami(df, "Punkty"), use_container_width=True)
+                st.table(_tabela_z_pozycjami(df, "Punkty"))
         with tab_kalendarz:
             df = _wczytaj_csv(f"{prefiks}_mecze.csv")
             _kalendarz_csv(df)
@@ -105,7 +133,7 @@ def _tabela_sheets(mecze: list[dict]) -> None:
     if tabela.empty:
         st.info("Brak zatwierdzonych wyników – tabela pojawi się po akceptacji pierwszych meczów.")
         return
-    st.dataframe(_tabela_z_pozycjami(tabela), use_container_width=True)
+    st.table(_tabela_z_pozycjami(tabela))
     st.caption("Tabela liczona automatycznie z zatwierdzonych wyników.")
 
 
@@ -132,6 +160,7 @@ def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str], klucz: str) ->
         return "—"
 
     df["Wynik"] = df.apply(status, axis=1)
+    pauzy = _pauzy_wg_kolejki(df)  # z pełnego terminarza, zanim zadziała filtr
 
     # Filtr po zawodniku – pokaż tylko jego mecze i kolejki.
     WSZYSCY = "— wszyscy zawodnicy —"
@@ -147,10 +176,11 @@ def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str], klucz: str) ->
     if "Kolejka" in df.columns:
         for kolejka, grupa in df.groupby("Kolejka", sort=True):
             st.markdown(f"#### Kolejka {kolejka}")
-            st.dataframe(grupa[kolumny].reset_index(drop=True),
-                         use_container_width=True, hide_index=True)
+            _tabela_statyczna(grupa[kolumny])
+            if pauzy.get(kolejka):
+                st.caption("⏸️ Pauzuje: " + ", ".join(pauzy[kolejka]))
     else:
-        st.dataframe(df[kolumny], use_container_width=True, hide_index=True)
+        _tabela_statyczna(df[kolumny])
 
 
 def _kalendarz_csv(df: pd.DataFrame | None) -> None:
@@ -158,13 +188,15 @@ def _kalendarz_csv(df: pd.DataFrame | None) -> None:
         st.info("Brak zaplanowanych meczów.")
         return
     df = df.drop(columns=[c for c in ["Godzina"] if c in df.columns])
+    pauzy = _pauzy_wg_kolejki(df)
     if "Kolejka" in df.columns:
         for kolejka, grupa in df.groupby("Kolejka", sort=True):
             st.markdown(f"#### Kolejka {kolejka}")
-            st.dataframe(grupa.drop(columns=["Kolejka"]).reset_index(drop=True),
-                         use_container_width=True, hide_index=True)
+            _tabela_statyczna(grupa.drop(columns=["Kolejka"]))
+            if pauzy.get(kolejka):
+                st.caption("⏸️ Pauzuje: " + ", ".join(pauzy[kolejka]))
     else:
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        _tabela_statyczna(df)
 
 
 # =============================================================================
@@ -230,6 +262,19 @@ OCENY_FP = {
 def strona_fairplay() -> None:
     st.header("🤝 Klasyfikacja Fair Play")
     if sheets.skonfigurowane():
+        tab_ocena, tab_tabela = st.tabs(["➕ Dodaj ocenę", "📊 Tabela Fair Play"])
+        with tab_ocena:
+            st.caption("Po rozegranym meczu oceń przeciwnika. "
+                       "Przy ocenie -1 komentarz jest obowiązkowy.")
+            _formularz_oceny_fp()
+        with tab_tabela:
+            _tabela_fairplay()
+    else:
+        _tabela_fairplay()
+
+
+def _tabela_fairplay() -> None:
+    if sheets.skonfigurowane():
         dane = sheets.pobierz_fairplay()
         df = pd.DataFrame(dane) if dane else None
     else:
@@ -237,29 +282,23 @@ def strona_fairplay() -> None:
 
     if df is None or df.empty:
         st.info("Brak danych klasyfikacji Fair Play.")
+        return
+
+    # Filtry: liga + szukaj zawodnika (pozycje liczone w obrębie wybranej ligi).
+    WSZYSTKIE = "— wszystkie ligi —"
+    ligi = [WSZYSTKIE] + (sorted(df["Liga"].dropna().unique()) if "Liga" in df.columns else [])
+    c1, c2 = st.columns(2)
+    liga = c1.selectbox("Liga", ligi, key="fp_liga")
+    szukaj = c2.text_input("Szukaj zawodnika", key="fp_szukaj").strip()
+
+    zakres = df if liga == WSZYSTKIE else df[df["Liga"] == liga]
+    ranking = _tabela_z_pozycjami(zakres, "Punkty Fair Play")
+    if szukaj:
+        ranking = ranking[ranking["Zawodnik"].str.contains(szukaj, case=False, na=False)]
+    if ranking.empty:
+        st.info("Brak zawodników dla wybranych filtrów.")
     else:
-        # Filtry: liga + szukaj zawodnika (pozycje liczone w obrębie wybranej ligi).
-        WSZYSTKIE = "— wszystkie ligi —"
-        ligi = [WSZYSTKIE] + (sorted(df["Liga"].dropna().unique()) if "Liga" in df.columns else [])
-        c1, c2 = st.columns(2)
-        liga = c1.selectbox("Liga", ligi, key="fp_liga")
-        szukaj = c2.text_input("Szukaj zawodnika", key="fp_szukaj").strip()
-
-        zakres = df if liga == WSZYSTKIE else df[df["Liga"] == liga]
-        ranking = _tabela_z_pozycjami(zakres, "Punkty Fair Play")
-        if szukaj:
-            ranking = ranking[ranking["Zawodnik"].str.contains(szukaj, case=False, na=False)]
-        if ranking.empty:
-            st.info("Brak zawodników dla wybranych filtrów.")
-        else:
-            st.dataframe(ranking, use_container_width=True)
-
-    # Okienko oceny fair play (tylko tryb Google Sheets).
-    if sheets.skonfigurowane():
-        st.markdown("---")
-        st.subheader("➕ Oceń fair play przeciwnika")
-        st.caption("Po rozegranym meczu oceń przeciwnika. Przy ocenie -1 komentarz jest obowiązkowy.")
-        _formularz_oceny_fp()
+        st.table(ranking)
 
 
 def _formularz_oceny_fp() -> None:
