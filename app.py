@@ -153,8 +153,11 @@ def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str], klucz: str) ->
     df = pd.DataFrame(mecze)
 
     def status(r):
-        if str(r.get("Wynik", "")).strip():
-            return str(r["Wynik"])
+        wynik = str(r.get("Wynik", "")).strip()
+        if wynik:
+            sety = [str(r.get(k, "")).strip() for k in ("Set1", "Set2", "SuperTB")]
+            sety = [s for s in sety if s]
+            return f"{wynik} ({', '.join(sety)})" if sety else wynik
         if str(r.get("ID", "")).strip() in oczekujace_id:
             return "⏳ oczekuje na akceptację"
         return "—"
