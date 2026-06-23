@@ -143,6 +143,16 @@ def dodaj_ocene(o: dict) -> None:
     wyczysc_cache()
 
 
+def usun_ocene(ocena_id: str) -> None:
+    """Usuwa ocenę fair play po jej ID (akcja administratora)."""
+    ws = _ws(config.WS_FAIRPLAY_OCENY)
+    nr = _znajdz_wiersz(ws, "ID", ocena_id)
+    if nr is None:
+        raise ValueError("Nie znaleziono oceny do usunięcia.")
+    ws.delete_rows(nr)
+    wyczysc_cache()
+
+
 def _aktualizuj(ws, naglowki: list[str], nr_wiersza: int, zmiany: dict) -> None:
     import gspread
 

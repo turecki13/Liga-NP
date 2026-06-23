@@ -231,27 +231,84 @@ def strona_glowna() -> None:
         st.warning("ℹ️ Tryb tylko do odczytu (dane z plików CSV). Aby włączyć samodzielne "
                    "zgłaszanie wyników, skonfiguruj Google Sheets – patrz README.")
 
-    st.subheader("ℹ️ Informacje")
-    st.markdown(
-        """
-        - **Sezon:** 2026 (15.06 – 20.09)
-        - **Format:** rozgrywki w systemie ligowym (każdy z każdym)
-        - **Mecz:** do 2 wygranych setów; przy stanie 1:1 super tie-break do 10
-        - **Punktacja:** 3 pkt za zwycięstwo, 1 pkt za porażkę
-        - **Kategorie:** 3 ligi kobiet i 3 ligi mężczyzn + klasyfikacja Fair Play
-        """
-    )
+    tab_info, tab_zalegle = st.tabs(["ℹ️ Informacje i regulamin", "⏳ Zaległe mecze"])
 
-    st.subheader("📜 Regulamin")
-    regulamin = DATA_DIR / "regulamin.md"
-    if regulamin.exists():
-        st.markdown(regulamin.read_text(encoding="utf-8"))
-    else:
-        st.info("Treść regulaminu znajdziesz w pliku `data/regulamin.md`.")
+    with tab_info:
+        st.subheader("ℹ️ Informacje")
+        st.markdown(
+            """
+            - **Sezon:** 2026 (15.06 – 20.09)
+            - **Format:** rozgrywki w systemie ligowym (każdy z każdym)
+            - **Mecz:** do 2 wygranych setów; przy stanie 1:1 super tie-break do 10
+            - **Punktacja:** 3 pkt za zwycięstwo, 1 pkt za porażkę
+            - **Kategorie:** 3 ligi kobiet i 3 ligi mężczyzn + klasyfikacja Fair Play
+            """
+        )
+        st.subheader("📜 Regulamin")
+        regulamin = DATA_DIR / "regulamin.md"
+        if regulamin.exists():
+            st.markdown(regulamin.read_text(encoding="utf-8"))
+        else:
+            st.info("Treść regulaminu znajdziesz w pliku `data/regulamin.md`.")
+
+    with tab_zalegle:
+        _zalegle_mecze()
 
     st.markdown("---")
     st.caption("© 2026 Letnia Liga Tenisowa NP Tennis Academy · "
                "aplikację stworzył **Tomek Turek** 🎾")
+
+
+def _zalegle_mecze() -> None:
+    """Mecze bez wyniku z kolejek, które już się rozpoczęły – z podziałem na kolejki."""
+    if not sheets.skonfigurowane():
+        st.info("Sekcja dostępna po włączeniu Google Sheets.")
+        return
+    mecze = sheets.pobierz_mecze()
+    if not mecze:
+        st.info("Brak meczów w arkuszu.")
+        return
+
+    oczek = {
+        str(z.get("MeczID", "")).strip()
+        for z in sheets.pobierz_zgloszenia()
+        if str(z.get("Status", "")).strip() == config.STATUS_OCZEKUJE
+    }
+
+    teraz = datetime.now()
+
+    def rozpoczeta(data_str) -> bool:
+        try:
+            d, m = str(data_str).split("-")[0].strip().split(".")
+            return datetime(teraz.year, int(m), int(d)) <= teraz
+        except Exception:
+            return True  # gdy nie umiemy odczytać daty – pokaż, by nic nie ukryć
+
+    zalegle = []
+    for mm in mecze:
+        if str(mm.get("Wynik", "")).strip() or str(mm.get("Zatwierdzono", "")).strip():
+            continue  # mecz rozegrany
+        if not rozpoczeta(mm.get("Data", "")):
+            continue  # kolejka jeszcze się nie zaczęła
+        oczekuje = str(mm.get("ID", "")).strip() in oczek
+        zalegle.append({
+            "Kolejka": mm.get("Kolejka"),
+            "Liga": mm.get("Liga"),
+            "Gospodarz": mm.get("Gospodarz"),
+            "Gość": mm.get("Gość"),
+            "Termin": mm.get("Data"),
+            "Status": "⏳ oczekuje na akceptację" if oczekuje else "❗ nierozegrany",
+        })
+
+    if not zalegle:
+        st.success("🎉 Brak zaległych meczów — wszystko rozegrane na czas!")
+        return
+
+    st.caption(f"Mecze bez wyniku z kolejek, które już się rozpoczęły: {len(zalegle)}")
+    df = pd.DataFrame(zalegle)
+    for kolejka, grupa in df.groupby("Kolejka", sort=True):
+        st.markdown(f"#### Kolejka {kolejka}")
+        _tabela_statyczna(grupa[["Liga", "Gospodarz", "Gość", "Termin", "Status"]])
 
 
 # Etykiety ocen fair play (-1 / 0 / +1) — kolejność od najlepszej.
@@ -533,9 +590,10 @@ def _panel_oceny_fp() -> None:
         st.info("Brak ocen dla wybranych filtrów.")
         return
 
-    for o in widoczne:
+    for i, o in enumerate(widoczne):
         ocena = jako_int(o.get("Ocena"))
         etykieta = OCENY_FP.get(ocena, str(ocena))
+        oid = str(o.get("ID", "")).strip()
         with st.container(border=True):
             st.markdown(f"{etykieta} — **{o.get('Oceniany','')}**  ·  od: {o.get('Oceniający','')}")
             st.caption(
@@ -544,6 +602,13 @@ def _panel_oceny_fp() -> None:
             komentarz = str(o.get("Komentarz", "")).strip()
             if komentarz:
                 st.markdown(f"> {komentarz}")
+            if oid and st.button("🗑️ Usuń ocenę", key=f"del_oc_{oid}_{i}"):
+                try:
+                    sheets.usun_ocene(oid)
+                    st.toast("Ocena usunięta.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Błąd usuwania: {e}")
 
 
 # =============================================================================
