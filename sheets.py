@@ -86,12 +86,22 @@ def pobierz_oceny() -> list[dict]:
         return []  # zakładka jeszcze nie istnieje – brak ocen
 
 
+@st.cache_data(ttl=30, show_spinner=False)
+def pobierz_ustawienia() -> dict:
+    try:
+        rows = _ws(config.WS_USTAWIENIA).get_all_records()
+        return {str(r.get("Klucz", "")).strip(): str(r.get("Wartosc", "")).strip() for r in rows}
+    except Exception:
+        return {}
+
+
 def wyczysc_cache() -> None:
     """Po zapisie czyścimy cache odczytu, żeby od razu widzieć zmiany."""
     pobierz_mecze.clear()
     pobierz_zgloszenia.clear()
     pobierz_fairplay.clear()
     pobierz_oceny.clear()
+    pobierz_ustawienia.clear()
 
 
 def _ws_lub_utworz(nazwa: str, naglowki: list[str]):
@@ -150,6 +160,17 @@ def usun_ocene(ocena_id: str) -> None:
     if nr is None:
         raise ValueError("Nie znaleziono oceny do usunięcia.")
     ws.delete_rows(nr)
+    wyczysc_cache()
+
+
+def ustaw_ustawienie(klucz: str, wartosc) -> None:
+    """Zapisuje ustawienie (klucz -> wartość) w zakładce 'ustawienia'."""
+    ws = _ws_lub_utworz(config.WS_USTAWIENIA, config.KOL_USTAWIENIA)
+    nr = _znajdz_wiersz(ws, "Klucz", klucz)
+    if nr is not None:
+        _aktualizuj(ws, config.KOL_USTAWIENIA, nr, {"Wartosc": str(wartosc)})
+    else:
+        ws.append_row([str(klucz), str(wartosc)], value_input_option="RAW")
     wyczysc_cache()
 
 

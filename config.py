@@ -15,6 +15,7 @@ WS_MECZE = "mecze"
 WS_ZGLOSZENIA = "zgloszenia"
 WS_FAIRPLAY = "fairplay"
 WS_FAIRPLAY_OCENY = "fairplay_oceny"
+WS_USTAWIENIA = "ustawienia"
 
 # Nagłówki kolumn w poszczególnych zakładkach arkusza.
 KOL_MECZE = [
@@ -30,6 +31,10 @@ KOL_FAIRPLAY_OCENY = [
     "ID", "Czas", "MeczID", "Liga", "Kolejka",
     "Oceniający", "Oceniany", "Ocena", "Komentarz",
 ]
+KOL_USTAWIENIA = ["Klucz", "Wartosc"]
+
+# Klucz ustawienia: do której kolejki włącznie pokazujemy zaległe mecze.
+KLUCZ_ZALEGLE_DO_KOLEJKI = "zalegle_do_kolejki"
 
 # Statusy zgłoszeń
 STATUS_OCZEKUJE = "oczekuje"

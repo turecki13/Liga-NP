@@ -231,9 +231,12 @@ def strona_glowna() -> None:
         st.warning("ℹ️ Tryb tylko do odczytu (dane z plików CSV). Aby włączyć samodzielne "
                    "zgłaszanie wyników, skonfiguruj Google Sheets – patrz README.")
 
-    tab_info, tab_zalegle = st.tabs(["ℹ️ Informacje i regulamin", "⏳ Zaległe mecze"])
+    tab_zalegle, tab_regulamin = st.tabs(["⏳ Zaległe mecze", "📜 Regulamin"])
 
-    with tab_info:
+    with tab_zalegle:
+        _zalegle_mecze()
+
+    with tab_regulamin:
         st.subheader("ℹ️ Informacje")
         st.markdown(
             """
@@ -251,16 +254,24 @@ def strona_glowna() -> None:
         else:
             st.info("Treść regulaminu znajdziesz w pliku `data/regulamin.md`.")
 
-    with tab_zalegle:
-        _zalegle_mecze()
-
     st.markdown("---")
     st.caption("© 2026 Letnia Liga Tenisowa NP Tennis Academy · "
                "aplikację stworzył **Tomek Turek** 🎾")
 
 
+def _zalegle_do_kolejki() -> int:
+    """Do której kolejki włącznie pokazujemy zaległe (sterowane przez admina)."""
+    if not sheets.skonfigurowane():
+        return 1
+    wart = sheets.pobierz_ustawienia().get(config.KLUCZ_ZALEGLE_DO_KOLEJKI, "1")
+    try:
+        return max(1, int(float(wart)))
+    except (TypeError, ValueError):
+        return 1
+
+
 def _zalegle_mecze() -> None:
-    """Mecze bez wyniku z kolejek, które już się rozpoczęły – z podziałem na kolejki."""
+    """Zaległe mecze (bez wyniku) do wskazanej kolejki – z podziałem na kolejki."""
     if not sheets.skonfigurowane():
         st.info("Sekcja dostępna po włączeniu Google Sheets.")
         return
@@ -269,31 +280,39 @@ def _zalegle_mecze() -> None:
         st.info("Brak meczów w arkuszu.")
         return
 
+    do_kolejki = _zalegle_do_kolejki()
+    st.caption(f"Pokazywane zaległości z kolejek: 1–{do_kolejki} "
+               "(kolejne odsłania organizator).")
+
+    WYBIERZ = "— wybierz ligę —"
+    liga = st.selectbox("Wybierz ligę", [WYBIERZ] + list(config.LIGI.values()), key="zal_liga")
+    if liga == WYBIERZ:
+        st.info("Wybierz ligę, aby zobaczyć zaległe mecze.")
+        return
+
     oczek = {
         str(z.get("MeczID", "")).strip()
         for z in sheets.pobierz_zgloszenia()
         if str(z.get("Status", "")).strip() == config.STATUS_OCZEKUJE
     }
 
-    teraz = datetime.now()
-
-    def rozpoczeta(data_str) -> bool:
+    def jako_int(v):
         try:
-            d, m = str(data_str).split("-")[0].strip().split(".")
-            return datetime(teraz.year, int(m), int(d)) <= teraz
-        except Exception:
-            return True  # gdy nie umiemy odczytać daty – pokaż, by nic nie ukryć
+            return int(float(v))
+        except (TypeError, ValueError):
+            return 0
 
     zalegle = []
     for mm in mecze:
+        if str(mm.get("Liga", "")).strip() != liga:
+            continue
+        if jako_int(mm.get("Kolejka")) > do_kolejki:
+            continue  # ta kolejka nie jest jeszcze odsłonięta
         if str(mm.get("Wynik", "")).strip() or str(mm.get("Zatwierdzono", "")).strip():
             continue  # mecz rozegrany
-        if not rozpoczeta(mm.get("Data", "")):
-            continue  # kolejka jeszcze się nie zaczęła
         oczekuje = str(mm.get("ID", "")).strip() in oczek
         zalegle.append({
             "Kolejka": mm.get("Kolejka"),
-            "Liga": mm.get("Liga"),
             "Gospodarz": mm.get("Gospodarz"),
             "Gość": mm.get("Gość"),
             "Termin": mm.get("Data"),
@@ -301,14 +320,13 @@ def _zalegle_mecze() -> None:
         })
 
     if not zalegle:
-        st.success("🎉 Brak zaległych meczów — wszystko rozegrane na czas!")
+        st.success("🎉 Brak zaległych meczów w tej lidze!")
         return
 
-    st.caption(f"Mecze bez wyniku z kolejek, które już się rozpoczęły: {len(zalegle)}")
     df = pd.DataFrame(zalegle)
     for kolejka, grupa in df.groupby("Kolejka", sort=True):
         st.markdown(f"#### Kolejka {kolejka}")
-        _tabela_statyczna(grupa[["Liga", "Gospodarz", "Gość", "Termin", "Status"]])
+        _tabela_statyczna(grupa[["Gospodarz", "Gość", "Termin", "Status"]])
 
 
 # Etykiety ocen fair play (-1 / 0 / +1) — kolejność od najlepszej.
@@ -522,6 +540,8 @@ def strona_panel_admina() -> None:
         st.session_state["admin_zalogowany"] = False
         st.rerun()
 
+    _panel_zalegle_admin()
+
     zgloszenia = sheets.pobierz_zgloszenia()
     oczekujace = [z for z in zgloszenia if str(z.get("Status", "")).strip() == config.STATUS_OCZEKUJE]
 
@@ -557,6 +577,28 @@ def strona_panel_admina() -> None:
                     st.error(f"Błąd: {e}")
 
     _panel_oceny_fp()
+
+
+def _panel_zalegle_admin() -> None:
+    st.subheader("🗓️ Zaległe mecze — widoczne kolejki")
+    n = _zalegle_do_kolejki()
+    st.write(f"Na stronie głównej pokazywane są zaległości z kolejek **1–{n}**.")
+    c1, c2 = st.columns(2)
+    if c1.button(f"➕ Odsłoń zaległe z kolejki {n + 1}", type="primary", disabled=n >= 14):
+        try:
+            sheets.ustaw_ustawienie(config.KLUCZ_ZALEGLE_DO_KOLEJKI, n + 1)
+            st.toast(f"Odsłonięto zaległości do kolejki {n + 1}.")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Błąd: {e}")
+    if c2.button("↩️ Reset do kolejki 1", disabled=n <= 1):
+        try:
+            sheets.ustaw_ustawienie(config.KLUCZ_ZALEGLE_DO_KOLEJKI, 1)
+            st.toast("Zresetowano do kolejki 1.")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Błąd: {e}")
+    st.markdown("---")
 
 
 def _panel_oceny_fp() -> None:
