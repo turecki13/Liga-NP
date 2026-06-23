@@ -155,6 +155,9 @@ def _kalendarz_sheets(mecze: list[dict], oczekujace_id: set[str], klucz: str) ->
     def status(r):
         wynik = str(r.get("Wynik", "")).strip()
         if wynik:
+            if wynik.lower().startswith("walkower"):
+                zw = r.get("Gość", "") if wynik.lower().endswith("gosc") else r.get("Gospodarz", "")
+                return f"walkower (wygrana: {zw})"
             sety = [str(r.get(k, "")).strip() for k in ("Set1", "Set2", "SuperTB")]
             sety = [s for s in sety if s]
             return f"{wynik} ({', '.join(sety)})" if sety else wynik
@@ -580,8 +583,19 @@ def strona_panel_admina() -> None:
         st.session_state["admin_zalogowany"] = False
         st.rerun()
 
-    _panel_zalegle_admin()
+    tab_zgl, tab_wynik, tab_oceny = st.tabs(
+        ["✅ Zgłoszenia wyników", "➕ Dodaj wynik / walkower", "🤝 Oceny fair play"]
+    )
+    with tab_zgl:
+        _panel_zalegle_admin()
+        _panel_zgloszenia()
+    with tab_wynik:
+        _panel_dodaj_wynik()
+    with tab_oceny:
+        _panel_oceny_fp()
 
+
+def _panel_zgloszenia() -> None:
     zgloszenia = sheets.pobierz_zgloszenia()
     oczekujace = [z for z in zgloszenia if str(z.get("Status", "")).strip() == config.STATUS_OCZEKUJE]
 
@@ -616,7 +630,58 @@ def strona_panel_admina() -> None:
                 except Exception as e:
                     st.error(f"Błąd: {e}")
 
-    _panel_oceny_fp()
+
+def _panel_dodaj_wynik() -> None:
+    st.caption("Wpis administratora trafia od razu do tabeli (bez akceptacji).")
+    mecze = sheets.pobierz_mecze()
+    liga = st.selectbox("Liga", list(config.LIGI.values()), key="adm_w_liga")
+    lista = [m for m in mecze if str(m.get("Liga", "")).strip() == liga]
+    if not lista:
+        st.info("Brak meczów w tej lidze.")
+        return
+
+    def etk(m):
+        w = str(m.get("Wynik", "")).strip()
+        suf = f"   [obecnie: {w}]" if w else ""
+        return f"K{m.get('Kolejka','?')}: {m.get('Gospodarz','?')} vs {m.get('Gość','?')}{suf}"
+
+    mecz = st.selectbox("Mecz", lista, format_func=etk, key="adm_w_mecz")
+    gospodarz, gosc = mecz.get("Gospodarz", ""), mecz.get("Gość", "")
+    typ = st.radio("Typ wpisu", ["Normalny wynik", "Walkower"], horizontal=True, key="adm_w_typ")
+
+    if typ == "Normalny wynik":
+        st.caption("Wynik z perspektywy gospodarza (np. 6:4). Super tie-break tylko przy 1:1.")
+        with st.form("adm_form_wynik"):
+            c1, c2, c3 = st.columns(3)
+            s1 = c1.text_input("Set 1", placeholder="6:4")
+            s2 = c2.text_input("Set 2", placeholder="3:6")
+            stb = c3.text_input("Super tie-break", placeholder="10:7")
+            ok = st.form_submit_button("Zapisz wynik", type="primary")
+        if ok:
+            try:
+                w = liga_logic.oblicz_mecz(s1, s2, stb)
+            except liga_logic.BladWyniku as e:
+                st.error(f"❌ {e}")
+                return
+            try:
+                sheets.zapisz_wynik(mecz.get("ID", ""), s1.strip(), s2.strip(), stb.strip(), w["wynik"])
+            except Exception as e:
+                st.error(f"Błąd zapisu: {e}")
+                return
+            st.success(f"✅ Zapisano wynik {w['wynik']} ({gospodarz} vs {gosc}).")
+            st.rerun()
+    else:
+        st.caption("Walkower: zwycięzca **3 pkt**, oddający **0 pkt** (bez setów).")
+        zw = st.radio("Zwycięzca walkowera:", [gospodarz, gosc], key="adm_w_zw")
+        if st.button("Zapisz walkower", type="primary"):
+            marker = config.WALKOWER_G if zw == gospodarz else config.WALKOWER_S
+            try:
+                sheets.zapisz_wynik(mecz.get("ID", ""), "", "", "", marker)
+            except Exception as e:
+                st.error(f"Błąd zapisu: {e}")
+                return
+            st.success(f"✅ Zapisano walkower — wygrana: {zw}.")
+            st.rerun()
 
 
 def _panel_zalegle_admin() -> None:

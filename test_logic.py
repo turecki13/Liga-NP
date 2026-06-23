@@ -87,6 +87,22 @@ sprawdz("A i B po 7 pkt", int(ttb[ttb.Zawodnik=='A']['Punkty'].iloc[0]) == 7 and
 sprawdz("A przed B (wygral bezposredni pojedynek)", kolejnosc.index("A") < kolejnosc.index("B"))
 sprawdz("C przed D (wygral bezposredni pojedynek)", kolejnosc.index("C") < kolejnosc.index("D"))
 
+# --- walkower: zwyciezca 3 pkt, oddajacy 0 pkt, bez setow ---
+t_wo = oblicz_tabele([
+    {"Gospodarz": "X", "Gość": "Y", "Wynik": "walkower:gosp", "Set1": "", "Set2": "", "SuperTB": ""},
+])
+wx = t_wo[t_wo.Zawodnik == "X"].iloc[0]
+wy = t_wo[t_wo.Zawodnik == "Y"].iloc[0]
+sprawdz("walkower: zwyciezca X ma 3 pkt", int(wx["Punkty"]) == 3 and int(wx["Wygrane"]) == 1)
+sprawdz("walkower: oddajacy Y ma 0 pkt", int(wy["Punkty"]) == 0 and int(wy["Przegrane"]) == 1)
+sprawdz("walkower: bez setow", int(wx["Sety wygrane"]) == 0 and int(wy["Sety wygrane"]) == 0)
+
+t_wo2 = oblicz_tabele([
+    {"Gospodarz": "X", "Gość": "Y", "Wynik": "walkower:gosc", "Set1": "", "Set2": "", "SuperTB": ""},
+])
+sprawdz("walkower dla gościa: Y ma 3 pkt",
+        int(t_wo2[t_wo2.Zawodnik == "Y"].iloc[0]["Punkty"]) == 3)
+
 print()
 if bledy:
     print(f"NIEPOWODZENIA: {len(bledy)}")

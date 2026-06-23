@@ -130,6 +130,26 @@ def oblicz_tabele(mecze: list[dict]) -> pd.DataFrame:
         gosc = str(m.get("Gość", "")).strip()
         if not gosp or not gosc:
             continue
+
+        # Walkower: zwycięzca 3 pkt, oddający 0 pkt (bez setów i gemów).
+        wynik_txt = str(m.get("Wynik", "")).strip().lower()
+        if wynik_txt.startswith("walkower"):
+            zw = "gosc" if wynik_txt.endswith("gosc") else "gospodarz"
+            g, o = gracz(gosp), gracz(gosc)
+            g["Mecze"] += 1
+            o["Mecze"] += 1
+            if zw == "gospodarz":
+                g["Wygrane"] += 1
+                g["Punkty"] += 3
+                o["Przegrane"] += 1  # oddający walkower: 0 pkt
+                h2h[(gosp, gosc)] = h2h.get((gosp, gosc), 0) + 1
+            else:
+                o["Wygrane"] += 1
+                o["Punkty"] += 3
+                g["Przegrane"] += 1
+                h2h[(gosc, gosp)] = h2h.get((gosc, gosp), 0) + 1
+            continue
+
         try:
             wynik = oblicz_mecz(m.get("Set1", ""), m.get("Set2", ""), m.get("SuperTB", ""))
         except BladWyniku:

@@ -36,6 +36,10 @@ KOL_USTAWIENIA = ["Klucz", "Wartosc"]
 # Klucz ustawienia: do której kolejki włącznie pokazujemy zaległe mecze.
 KLUCZ_ZALEGLE_DO_KOLEJKI = "zalegle_do_kolejki"
 
+# Oznaczenia walkowera w kolumnie "Wynik" (zwycięzca: gospodarz / gość)
+WALKOWER_G = "walkower:gosp"
+WALKOWER_S = "walkower:gosc"
+
 # Statusy zgłoszeń
 STATUS_OCZEKUJE = "oczekuje"
 STATUS_ZAAKCEPTOWANE = "zaakceptowane"

@@ -163,6 +163,21 @@ def usun_ocene(ocena_id: str) -> None:
     wyczysc_cache()
 
 
+def zapisz_wynik(mecz_id: str, set1: str = "", set2: str = "",
+                 super_tb: str = "", wynik: str = "") -> None:
+    """Zapisuje wynik bezpośrednio do meczu (wpis administratora / walkower)."""
+    teraz = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ws_m = _ws(config.WS_MECZE)
+    nr = _znajdz_wiersz(ws_m, "ID", mecz_id)
+    if nr is None:
+        raise ValueError(f"Nie znaleziono meczu o ID {mecz_id}.")
+    _aktualizuj(ws_m, config.KOL_MECZE, nr, {
+        "Set1": set1, "Set2": set2, "SuperTB": super_tb,
+        "Wynik": wynik, "Zatwierdzono": teraz,
+    })
+    wyczysc_cache()
+
+
 def ustaw_ustawienie(klucz: str, wartosc) -> None:
     """Zapisuje ustawienie (klucz -> wartość) w zakładce 'ustawienia'."""
     ws = _ws_lub_utworz(config.WS_USTAWIENIA, config.KOL_USTAWIENIA)
