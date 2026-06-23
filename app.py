@@ -351,10 +351,50 @@ def strona_fairplay() -> None:
         _tabela_fairplay()
 
 
+def _int0(v) -> int:
+    try:
+        return int(float(v))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _fairplay_z_ocen() -> pd.DataFrame | None:
+    """Buduje klasyfikację Fair Play: punkty = suma ocen (-1/0/+1) zawodnika."""
+    roster = sheets.pobierz_fairplay()   # Zawodnik, Liga (pełna lista uczestników)
+    oceny = sheets.pobierz_oceny()
+
+    suma, liczba = {}, {}
+    for o in oceny:
+        naz = str(o.get("Oceniany", "")).strip()
+        if not naz:
+            continue
+        suma[naz] = suma.get(naz, 0) + _int0(o.get("Ocena"))
+        liczba[naz] = liczba.get(naz, 0) + 1
+
+    wiersze = []
+    if roster:
+        for r in roster:
+            naz = str(r.get("Zawodnik", "")).strip()
+            if not naz:
+                continue
+            wiersze.append({"Zawodnik": naz, "Liga": str(r.get("Liga", "")).strip(),
+                            "Punkty Fair Play": suma.get(naz, 0), "Liczba ocen": liczba.get(naz, 0)})
+    else:  # brak rosteru – zbuduj listę z samych ocen
+        ligi = {}
+        for o in oceny:
+            naz = str(o.get("Oceniany", "")).strip()
+            if naz:
+                ligi.setdefault(naz, str(o.get("Liga", "")).strip())
+        for naz, lg in ligi.items():
+            wiersze.append({"Zawodnik": naz, "Liga": lg,
+                            "Punkty Fair Play": suma.get(naz, 0), "Liczba ocen": liczba.get(naz, 0)})
+
+    return pd.DataFrame(wiersze) if wiersze else None
+
+
 def _tabela_fairplay() -> None:
     if sheets.skonfigurowane():
-        dane = sheets.pobierz_fairplay()
-        df = pd.DataFrame(dane) if dane else None
+        df = _fairplay_z_ocen()
     else:
         df = _wczytaj_csv("fairplay.csv")
 
