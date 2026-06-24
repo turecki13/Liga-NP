@@ -647,6 +647,25 @@ def _panel_dodaj_wynik() -> None:
 
     mecz = st.selectbox("Mecz", lista, format_func=etk, key="adm_w_mecz")
     gospodarz, gosc = mecz.get("Gospodarz", ""), mecz.get("Gość", "")
+
+    # Usuwanie istniejącego wyniku (mecz wraca jako nierozegrany).
+    obecny = str(mecz.get("Wynik", "")).strip()
+    if obecny or str(mecz.get("Zatwierdzono", "")).strip():
+        if obecny.lower().startswith("walkower"):
+            zww = gosc if obecny.lower().endswith("gosc") else gospodarz
+            opis = f"walkower (wygrana: {zww})"
+        else:
+            opis = obecny or "—"
+        with st.container(border=True):
+            st.markdown(f"Ten mecz ma już wynik: **{opis}**")
+            if st.button("🗑️ Usuń wynik z tabeli", key="adm_w_del"):
+                try:
+                    sheets.wyczysc_wynik(mecz.get("ID", ""))
+                    st.toast("Wynik usunięty — mecz wraca jako nierozegrany.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Błąd: {e}")
+
     typ = st.radio("Typ wpisu", ["Normalny wynik", "Walkower"], horizontal=True, key="adm_w_typ")
 
     if typ == "Normalny wynik":
