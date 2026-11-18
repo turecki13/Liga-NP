@@ -37,6 +37,11 @@ LIMIT_MASTERS: int = 8
 # Docelowa liczebność grupy (każdy z każdym).
 ROZMIAR_GRUPY: int = 4
 
+# Listy rozwijane w rozpisce admina.
+KORTY: list[str] = [f"Kort {i}" for i in range(1, 7)]           # Kort 1 … Kort 6
+GODZINY: list[str] = [f"{h:02d}:{m:02d}"                        # 08:00 … 22:45 co 15 min
+                      for h in range(8, 23) for m in (0, 15, 30, 45)]
+
 # --- Nazwy zakładek arkusza Google / plików danych ----------------------------
 WS_GRUPY = "grupy"
 WS_MECZE = "mecze"

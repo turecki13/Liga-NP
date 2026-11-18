@@ -278,13 +278,27 @@ def _edytor_rozpiski(mecze: list[dict], klucz: str) -> None:
     df["GemyA"] = df["GemyA"].astype("Int64")
     df["GemyB"] = df["GemyB"].astype("Int64")
 
+    # Opcje list rozwijanych; dołączamy ewentualne nietypowe wartości już zapisane,
+    # żeby edytor nie oznaczył ich jako błędne.
+    kort_opcje = list(C.KORTY)
+    godz_opcje = list(C.GODZINY)
+    for m in mecze:
+        k = str(m.get("Kort", "")).strip()
+        if k and k not in kort_opcje:
+            kort_opcje.append(k)
+        g = str(m.get("Godzina", "")).strip()
+        if g and g not in godz_opcje:
+            godz_opcje.append(g)
+
     edited = st.data_editor(
         df, key=f"ed_{klucz}", hide_index=True, width="stretch",
         column_order=["Mecz", "Kort", "Godzina", "GemyA", "GemyB"],
         column_config={
             "Mecz": st.column_config.TextColumn("Mecz", disabled=True),
-            "Kort": st.column_config.TextColumn("Kort"),
-            "Godzina": st.column_config.TextColumn("Godzina"),
+            "Kort": st.column_config.SelectboxColumn("Kort", options=kort_opcje,
+                                                     required=False),
+            "Godzina": st.column_config.SelectboxColumn("Godzina", options=godz_opcje,
+                                                        required=False),
             "GemyA": st.column_config.NumberColumn("Gemy ◀", min_value=0, step=1,
                                                    help="Gemy pierwszego zawodnika"),
             "GemyB": st.column_config.NumberColumn("Gemy ▶", min_value=0, step=1,
