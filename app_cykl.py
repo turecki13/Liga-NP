@@ -129,6 +129,25 @@ def _int_lub_na(v):
         return pd.NA
 
 
+def _blank_none(x):
+    """Pusty / biały napis -> None (listy rozwijane traktują None jako brak wartości)."""
+    s = "" if x is None else str(x).strip()
+    return s or None
+
+
+def _gem_zapis(v):
+    """Wartość z listy gemów -> int, albo '' gdy puste/niepoprawne."""
+    if v is None:
+        return ""
+    s = str(v).strip()
+    if s == "":
+        return ""
+    try:
+        return int(float(s))
+    except ValueError:
+        return ""
+
+
 # =============================================================================
 #  Nagłówek + logowanie
 # =============================================================================
@@ -267,16 +286,18 @@ def _edytor_rozpiski(mecze: list[dict], klucz: str) -> None:
     if not mecze:
         st.caption("Brak meczów (dodaj skład grupy poniżej).")
         return
+    def _gem_str(v):
+        iv = _int_lub_na(v)
+        return None if pd.isna(iv) else str(int(iv))
+
     df = pd.DataFrame([{
         "ID": m.get("ID", ""),
         "Mecz": f"{m.get('ZawodnikA','')} – {m.get('ZawodnikB','')}",
-        "Kort": m.get("Kort", ""),
-        "Godzina": m.get("Godzina", ""),
-        "GemyA": _int_lub_na(m.get("GemyA")),
-        "GemyB": _int_lub_na(m.get("GemyB")),
+        "Kort": _blank_none(m.get("Kort")),
+        "Godzina": _blank_none(m.get("Godzina")),
+        "GemyA": _gem_str(m.get("GemyA")),
+        "GemyB": _gem_str(m.get("GemyB")),
     } for m in mecze])
-    df["GemyA"] = df["GemyA"].astype("Int64")
-    df["GemyB"] = df["GemyB"].astype("Int64")
 
     # Opcje list rozwijanych; dołączamy ewentualne nietypowe wartości już zapisane,
     # żeby edytor nie oznaczył ich jako błędne.
@@ -299,10 +320,12 @@ def _edytor_rozpiski(mecze: list[dict], klucz: str) -> None:
                                                      required=False),
             "Godzina": st.column_config.SelectboxColumn("Godzina", options=godz_opcje,
                                                         required=False),
-            "GemyA": st.column_config.NumberColumn("Gemy ◀", min_value=0, step=1,
-                                                   help="Gemy pierwszego zawodnika"),
-            "GemyB": st.column_config.NumberColumn("Gemy ▶", min_value=0, step=1,
-                                                   help="Gemy drugiego zawodnika"),
+            "GemyA": st.column_config.SelectboxColumn("Gemy ◀", options=C.GEMY_OPCJE,
+                                                      required=False,
+                                                      help="Gemy pierwszego zawodnika"),
+            "GemyB": st.column_config.SelectboxColumn("Gemy ▶", options=C.GEMY_OPCJE,
+                                                      required=False,
+                                                      help="Gemy drugiego zawodnika"),
         },
     )
     if st.button("💾 Zapisz rozpiskę i wyniki", key=f"save_{klucz}", type="primary"):
@@ -311,8 +334,8 @@ def _edytor_rozpiski(mecze: list[dict], klucz: str) -> None:
                 store.aktualizuj_mecz(str(r["ID"]), {
                     "Kort": "" if pd.isna(r["Kort"]) else str(r["Kort"]).strip(),
                     "Godzina": "" if pd.isna(r["Godzina"]) else str(r["Godzina"]).strip(),
-                    "GemyA": "" if pd.isna(r["GemyA"]) else int(r["GemyA"]),
-                    "GemyB": "" if pd.isna(r["GemyB"]) else int(r["GemyB"]),
+                    "GemyA": _gem_zapis(r["GemyA"]),
+                    "GemyB": _gem_zapis(r["GemyB"]),
                 })
             st.toast("Zapisano rozpiskę i wyniki.")
             st.rerun()
