@@ -32,6 +32,7 @@ st.set_page_config(
     page_title="Cykl Turniejów Singlowych NP Tennis Academy",
     page_icon=str(LOGO_PIONOWE) if LOGO_PIONOWE.exists() else "🏆",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 # =============================================================================
@@ -169,7 +170,8 @@ def panel_logowania() -> None:
                         st.error("Błędne hasło.")
             st.caption("Widok publiczny jest tylko do odczytu.")
         st.markdown("---")
-        st.caption(f"Tryb danych: **{store.tryb()}**")
+        if _admin():
+            st.caption(f"Tryb danych: **{store.tryb()}**")
         st.caption("Cykl Turniejów • NP Tennis Academy")
 
 

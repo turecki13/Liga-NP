@@ -1,7 +1,10 @@
 # 🎾 Liga Tenisowa – NP Tennis Academy
 
-Strona w Streamlit do prezentacji wyników ligi tenisowej z **samodzielnym
-zgłaszaniem wyników przez zawodników** i **trybem akceptacji** przez organizatora.
+Oficjalne rozgrywki tenisowe NP Tennis Academy.
+
+Aplikacje w Streamlit do prezentacji wyników: **Letnia Liga** (`app.py`) oraz
+**Cykl Turniejów Singlowych** (`app_cykl.py`) — z samodzielnym zgłaszaniem wyników
+i trybem administratora.
 
 ## Dwa tryby działania
 
