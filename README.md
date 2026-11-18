@@ -94,3 +94,47 @@ w Google Sheets (przetrwają restart). Sekrety wklejasz w panelu **App → Setti
 | `seed_sheets.py` | jednorazowe przygotowanie arkusza |
 | `test_logic.py` | testy logiki (`python test_logic.py`) |
 | `data/` | dane CSV (tryb zapasowy) + `regulamin.md` |
+
+---
+
+## Cykl Turniejów Singlowych — druga aplikacja (`app_cykl.py`)
+
+Osobna aplikacja (nowy layout) dla **Cyklu Turniejów Singlowych**: zakładka na każdy
+turniej, grupy 4-osobowe każdy z każdym, klasyfikacja generalna K/M z zaznaczeniem
+kwalifikacji do Masters (top 8). Edycja (składy, korty, godziny, wyniki) tylko dla
+administratora; widok publiczny jest tylko do odczytu.
+
+```powershell
+streamlit run app_cykl.py
+```
+
+### Tryby danych
+
+| Tryb | Kiedy | Uwagi |
+|------|-------|-------|
+| **lokalny JSON** (`data/cykl/`) | brak arkusza cyklu w sekretach | tylko lokalnie/demo — na Streamlit Cloud dane **nie przetrwają** restartu |
+| **Google Sheets** | po dodaniu `[cykl_google_sheets]` | zakładki `grupy` i `mecze` tworzą się automatycznie; dane trwałe |
+
+### Wdrożenie na Streamlit Community Cloud
+
+1. Utwórz **osobny arkusz Google** (np. „Cykl Turniejów 2026/2027") i udostępnij go
+   **temu samemu** kontu serwisowemu (`client_email`) jako **Edytor**; skopiuj jego ID z URL.
+2. W panelu Streamlit Cloud dodaj **nową aplikację** z tego repo, branch `main`,
+   **Main file: `app_cykl.py`** → Deploy.
+3. W **Settings → Secrets** wklej tę samą zawartość co dla ligi i dodaj blok:
+   ```toml
+   [cykl_google_sheets]
+   spreadsheet_id = "ID_ARKUSZA_CYKLU"
+   ```
+
+Hasło administratora: wspólne z ligą (`[admin] password`).
+
+### Pliki cyklu
+
+| Plik | Rola |
+|------|------|
+| `app_cykl.py` | interfejs aplikacji cyklu |
+| `cykl_logic.py` | punktacja grup i klasyfikacja generalna (czysta logika) |
+| `cykl_store.py` | dane cyklu (Google Sheets albo lokalny JSON) |
+| `cykl_config.py` | turnieje, daty, punktacja, próg Masters |
+| `data/regulamin_cykl.md` | regulamin cyklu (zakładka Regulamin) |
