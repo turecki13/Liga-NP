@@ -183,9 +183,16 @@ def zapisz_grupe(turniej_id: str, plec: str, grupa: str,
     nowe = cykl_logic.generuj_mecze_grupy(turniej_id, plec, grupa, zawodnicy)
     for m in nowe:
         stara = stare_tej_grupy.get(_para_klucz(m["ZawodnikA"], m["ZawodnikB"]))
-        if stara:
-            for pole in ("Kort", "Godzina", "GemyA", "GemyB"):
-                m[pole] = stara.get(pole, "")
+        if not stara:
+            continue
+        m["Kort"] = stara.get("Kort", "")
+        m["Godzina"] = stara.get("Godzina", "")
+        # Przenosimy wynik z zachowaniem przypisania zawodnik → gemy,
+        # nawet jeśli kolejność ZawodnikA/ZawodnikB jest inna niż poprzednio.
+        if str(stara.get("ZawodnikA", "")).strip() == str(m["ZawodnikA"]).strip():
+            m["GemyA"], m["GemyB"] = stara.get("GemyA", ""), stara.get("GemyB", "")
+        else:
+            m["GemyA"], m["GemyB"] = stara.get("GemyB", ""), stara.get("GemyA", "")
     _zapisz(C.WS_MECZE, inne + nowe)
 
 

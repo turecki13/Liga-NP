@@ -209,7 +209,7 @@ def widok_plci(turniej_id: str, plec: str) -> None:
 
 def _karta_grupy(turniej_id: str, plec: str, grupa: str) -> None:
     zawodnicy = store.zawodnicy_grupy(turniej_id, plec, grupa)
-    mecze = store.mecze_grupy(turniej_id, plec, grupa)
+    mecze = cykl_logic.uporzadkuj_mecze(zawodnicy, store.mecze_grupy(turniej_id, plec, grupa))
 
     with st.container(border=True):
         if _admin():

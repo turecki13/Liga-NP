@@ -43,6 +43,45 @@ def pary_grupy(zawodnicy: list[str]) -> list[tuple[str, str]]:
     return list(combinations(zawodnicy, 2))
 
 
+def kolejnosc_par(zawodnicy: list[str]) -> list[tuple[str, str]]:
+    """
+    Kolejność meczów metodą kołową (round-robin), aby żaden zawodnik nie grał
+    kilku meczów z rzędu. Zawodnicy grają po jednym meczu na rundę, a rundy
+    układamy po kolei — dla 4 osób nikt nie ma 3 meczów pod rząd (maks. 2).
+    """
+    zaw = [str(z).strip() for z in zawodnicy if str(z).strip()]
+    n = len(zaw)
+    if n < 2:
+        return []
+    arr = list(zaw)
+    if n % 2 == 1:        # nieparzysta liczba — dokładamy „pauzę" (None)
+        arr.append(None)
+        n += 1
+    polowa = n // 2
+    pary: list[tuple[str, str]] = []
+    for _ in range(n - 1):
+        for i in range(polowa):
+            a, b = arr[i], arr[n - 1 - i]
+            if a is not None and b is not None:
+                pary.append((a, b))
+        # obrót: pierwszy zawodnik stoi, reszta rotuje
+        arr = [arr[0], arr[-1]] + arr[1:-1]
+    return pary
+
+
+def uporzadkuj_mecze(zawodnicy: list[str], mecze: list[dict]) -> list[dict]:
+    """Sortuje mecze grupy wg kolejności metody kołowej (dla czytelnej rozpiski)."""
+    kolej = kolejnosc_par(zawodnicy)
+    indeks = {frozenset(p): i for i, p in enumerate(kolej)}
+
+    def klucz(m: dict) -> int:
+        para = frozenset({str(m.get("ZawodnikA", "")).strip(),
+                          str(m.get("ZawodnikB", "")).strip()})
+        return indeks.get(para, len(kolej) + 1)
+
+    return sorted(mecze, key=klucz)
+
+
 def _pusta_statystyka(nazwa: str) -> dict:
     return {
         "Zawodnik": nazwa, "Mecze": 0, "Wygrane": 0, "Przegrane": 0,
@@ -226,7 +265,7 @@ def generuj_mecze_grupy(turniej_id: str, plec: str, grupa: str,
     """Tworzy wiersze meczów (każdy z każdym) dla grupy — bez wyników/kortów."""
     zawodnicy = [z for z in zawodnicy if str(z).strip()]
     mecze = []
-    for i, (a, b) in enumerate(pary_grupy(zawodnicy), start=1):
+    for i, (a, b) in enumerate(kolejnosc_par(zawodnicy), start=1):
         mecze.append({
             "ID": f"{turniej_id}-{plec}-{grupa}-{i}",
             "TurniejID": turniej_id, "Plec": plec, "Grupa": grupa,
