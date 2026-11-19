@@ -41,6 +41,7 @@
 - Zapisy na każdy turniej są **osobne** — udział w jednym turnieju nie oznacza automatycznego zgłoszenia na kolejne.
 - Zapisy prowadzone są przez system **Luppo**. Link do zapisów na dany turniej przekazują organizatorzy.
 - O udziale decyduje prawidłowe zgłoszenie w systemie w terminie wyznaczonym przez organizatorów.
+- Zapis na turniej jest możliwy od **16. roku życia**. Zawodnicy niepełnoletni mogą wziąć udział wyłącznie po dostarczeniu organizatorom **pisemnej zgody rodziców (opiekunów prawnych)**.
 - Organizatorzy zastrzegają sobie prawo do zamknięcia zapisów po osiągnięciu limitu miejsc oraz do prowadzenia listy rezerwowej.
 - Rezygnacja z udziału w turnieju możliwa jest do **48 godzin przed jego rozpoczęciem** — w takim przypadku opłata startowa podlega zwrotowi. W przypadku rezygnacji później niż 48 godzin przed turniejem opłata startowa **nie jest zwracana**; zawodnik może we własnym zakresie znaleźć zastępstwo za siebie.
 
@@ -93,6 +94,10 @@ Dodatkowo:
 - Do klasyfikacji generalnej sumowane są punkty zdobyte przez zawodnika we wszystkich turniejach rundy zasadniczej cyklu.
 - Punkty naliczane są zgodnie z pkt 6 (za miejsce w grupie oraz bonus za zwycięstwo „do zera").
 - Klasyfikacja generalna stanowi podstawę kwalifikacji do turnieju Masters.
+- W przypadku **równej liczby punktów** w klasyfikacji generalnej, gdy decyduje to o miejscu rozstrzygającym o awansie do turnieju Masters, o wyższej pozycji decydują kolejno:
+    1. **bilans gemów** w całym cyklu (gemy zdobyte minus gemy stracone we wszystkich meczach rundy zasadniczej),
+    2. **wynik bezpośredniego pojedynku** pomiędzy zainteresowanymi zawodnikami, jeżeli taki miał miejsce,
+    3. **większa liczba zwycięstw meczowych** w całym cyklu; przy dalszej równości — lepszy wynik w ostatnim rozegranym turnieju cyklu.
 
 ### 8. Turniej Masters (finał)
 
@@ -124,6 +129,18 @@ Dodatkowo:
 - Organizatorzy nie ponoszą odpowiedzialności za kontuzje, urazy, pogorszenie stanu zdrowia ani szkody powstałe w związku z udziałem w rozgrywkach.
 - Organizatorzy rekomendują, aby każdy uczestnik posiadał we własnym zakresie odpowiednie ubezpieczenie NNW obejmujące amatorskie uprawianie sportu.
 - W sprawach nieuregulowanych niniejszym regulaminem organizatorzy podejmują decyzje w oparciu o obecnie obowiązujące przepisy Polskiego Związku Tenisowego.
+
+### 12. Ochrona danych osobowych (RODO)
+
+1. Administratorem danych osobowych uczestników są organizatorzy Cyklu Turniejów Singlowych NP Tennis Academy.
+2. Dane osobowe uczestników przetwarzane są w celu organizacji i przeprowadzenia Cyklu Turniejów Singlowych NP Tennis Academy, w szczególności prowadzenia zapisów, kontaktu z zawodnikami, przygotowania harmonogramów, dokumentowania wyników, prowadzenia klasyfikacji generalnej oraz organizacji turnieju Masters.
+3. Przetwarzanie danych niezbędnych do uczestnictwa w rozgrywkach odbywa się na podstawie art. 6 ust. 1 lit. b RODO, a danych wykorzystywanych do prowadzenia i publikowania wyników oraz klasyfikacji – na podstawie art. 6 ust. 1 lit. f RODO, w ramach prawnie uzasadnionego interesu organizatora polegającego na dokumentowaniu przebiegu rywalizacji sportowej.
+4. Organizatorzy mogą publikować imiona i nazwiska zawodników, wyniki spotkań, miejsca w grupach oraz klasyfikację generalną na stronie internetowej, w systemie turniejowym oraz w oficjalnych kanałach informacyjnych NP Tennis Academy.
+5. Dane osobowe mogą być udostępniane podmiotom wspierającym organizację rozgrywek, w szczególności operatorowi systemu zapisów Luppo, w zakresie niezbędnym do realizacji tych usług.
+6. Dane osobowe będą przechowywane przez okres niezbędny do realizacji celów związanych z organizacją cyklu, a następnie przez okres wynikający z obowiązujących przepisów prawa lub uzasadnionych potrzeb dokumentowania wyników sportowych.
+7. Uczestnikowi przysługuje, na zasadach określonych w RODO, prawo dostępu do swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia danych oraz wniesienia sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie organizatora. Uczestnik ma również prawo wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych.
+8. Podanie danych niezbędnych do zapisów i uczestnictwa w rozgrywkach jest dobrowolne, jednak ich niepodanie uniemożliwia udział w turnieju.
+9. Szczegółowe informacje dotyczące przetwarzania danych osobowych znajdują się w klauzuli informacyjnej RODO udostępnianej uczestnikom podczas zapisów na turniej.
 
 ## ORGANIZATORZY
 
