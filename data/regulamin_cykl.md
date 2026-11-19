@@ -132,7 +132,7 @@ Dodatkowo:
 
 ### 12. Ochrona danych osobowych (RODO)
 
-1. Administratorem danych osobowych uczestników są organizatorzy Cyklu Turniejów Singlowych NP Tennis Academy.
+1. Administratorem danych osobowych uczestników jest Klub Tenisowy NP Tennis Academy, ul. Zachodnia 50/57, 53-622 Wrocław, będący organizatorem Cyklu Turniejów Singlowych NP Tennis Academy.
 2. Dane osobowe uczestników przetwarzane są w celu organizacji i przeprowadzenia Cyklu Turniejów Singlowych NP Tennis Academy, w szczególności prowadzenia zapisów, kontaktu z zawodnikami, przygotowania harmonogramów, dokumentowania wyników, prowadzenia klasyfikacji generalnej oraz organizacji turnieju Masters.
 3. Przetwarzanie danych niezbędnych do uczestnictwa w rozgrywkach odbywa się na podstawie art. 6 ust. 1 lit. b RODO, a danych wykorzystywanych do prowadzenia i publikowania wyników oraz klasyfikacji – na podstawie art. 6 ust. 1 lit. f RODO, w ramach prawnie uzasadnionego interesu organizatora polegającego na dokumentowaniu przebiegu rywalizacji sportowej.
 4. Organizatorzy mogą publikować imiona i nazwiska zawodników, wyniki spotkań, miejsca w grupach oraz klasyfikację generalną na stronie internetowej, w systemie turniejowym oraz w oficjalnych kanałach informacyjnych NP Tennis Academy.
