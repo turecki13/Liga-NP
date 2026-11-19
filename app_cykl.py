@@ -549,16 +549,19 @@ def main() -> None:
     panel_logowania()
     naglowek()
 
-    etykiety = (["🏠 Start"]
+    etykiety = (["🏠 Start", "📜 Regulamin"]
                 + [_etykieta_turnieju(t) for t in C.TURNIEJE]
-                + ["🏆 Klasyfikacja generalna", "📜 Regulamin"])
+                + ["🏆 Klasyfikacja generalna"])
     zakladki = st.tabs(etykiety)
 
     with zakladki[0]:
         widok_glowna()
 
+    with zakladki[1]:
+        widok_regulamin()
+
     for i, t in enumerate(C.TURNIEJE):
-        with zakladki[i + 1]:
+        with zakladki[i + 2]:
             try:
                 widok_turnieju(t)
             except Exception as e:
@@ -566,16 +569,13 @@ def main() -> None:
                 with st.expander("Szczegóły (dla organizatora)"):
                     st.exception(e)
 
-    with zakladki[-2]:
+    with zakladki[-1]:
         try:
             widok_generalnej()
         except Exception as e:
             st.error("Nie udało się wczytać klasyfikacji.")
             with st.expander("Szczegóły (dla organizatora)"):
                 st.exception(e)
-
-    with zakladki[-1]:
-        widok_regulamin()
 
     st.markdown("---")
     st.caption("© 2026/2027 Cykl Turniejów Singlowych · NP Tennis Academy · "
